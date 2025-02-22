@@ -27,30 +27,45 @@ def scrape_data_point():
     loguru.logger.info(f"Request URL: {req.url}")
     loguru.logger.info(f"Request status code: {req.status_code}")
 
-    headlines = {
-        "Featured": "",
-        "News": "",
-        "Sports": "",
-        "Opinion": "",
+    sections = {
+        "News": None,
+        "Sports": None,
+        "Opinion": None,
     }
 
     if req.ok:
         soup = bs4.BeautifulSoup(req.text, "html.parser")
 
-        section_classes = {
-            "Featured": "featured-class-name",
-            "News": "news-class-name",
-            "Sports": "sports-class-name",
-            "Opinion": "opinion-class-name"
-        }
+        # Extract News headline
+        news_section = soup.find("div", class_="col-sm-6 section-news")
+        if news_section:
+            first_news_link = news_section.find("a", class_="frontpage-link medium-link newstop")
+            if first_news_link and first_news_link.get("href"):
+                sections["News"] = first_news_link.text.strip()
 
-        for section, css_class in section_classes.items():
-            target_element = soup.find("a", class_=css_class)
-            headlines[section] = target_element.text.strip() if target_element else ""
+        # Extract Sports and Opinion headlines
+        sports_opinion_divs = soup.find_all("div", class_="col-sm-6")
 
-            loguru.logger.info(f"{section} Headline: {headlines[section]}")
+        for section_div in sports_opinion_divs:
+            section_heading = section_div.find("h3", class_="frontpage-section")
+            if section_heading:
+                section_title = section_heading.text.strip().lower()
 
-    return headlines
+                if "sports" in section_title:
+                    first_link = section_div.find("div", class_="article-summary").find("a")
+                    if first_link:
+                        sections["Sports"] = first_link.text.strip()
+
+                elif "opinion" in section_title:
+                    first_link = section_div.find("div", class_="article-summary").find("a")
+                    if first_link:
+                        sections["Opinion"] = first_link.text.strip()
+
+        # Log extracted headlines
+        for section, headline in sections.items():
+            loguru.logger.info(f"{section} Headline: {headline if headline else 'Not Found'}")
+
+    return sections
 
 
 if __name__ == "__main__":
