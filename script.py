@@ -27,12 +27,30 @@ def scrape_data_point():
     loguru.logger.info(f"Request URL: {req.url}")
     loguru.logger.info(f"Request status code: {req.status_code}")
 
+    headlines = {
+        "Featured": "",
+        "News": "",
+        "Sports": "",
+        "Opinion": "",
+    }
+
     if req.ok:
         soup = bs4.BeautifulSoup(req.text, "html.parser")
-        target_element = soup.find("a", class_="frontpage-link")
-        data_point = "" if target_element is None else target_element.text
-        loguru.logger.info(f"Data point: {data_point}")
-        return data_point
+
+        section_classes = {
+            "Featured": "featured-class-name",
+            "News": "news-class-name",
+            "Sports": "sports-class-name",
+            "Opinion": "opinion-class-name"
+        }
+
+        for section, css_class in section_classes.items():
+            target_element = soup.find("a", class_=css_class)
+            headlines[section] = target_element.text.strip() if target_element else ""
+
+            loguru.logger.info(f"{section} Headline: {headlines[section]}")
+
+    return headlines
 
 
 if __name__ == "__main__":
