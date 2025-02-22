@@ -28,6 +28,7 @@ def scrape_data_point():
     loguru.logger.info(f"Request status code: {req.status_code}")
 
     sections = {
+        "Featured": None,
         "News": None,
         "Sports": None,
         "Opinion": None,
@@ -36,11 +37,18 @@ def scrape_data_point():
     if req.ok:
         soup = bs4.BeautifulSoup(req.text, "html.parser")
 
+        # Extract Featured headline
+        featured_section = soup.find("div", class_="featured-articles")  # Adjust class if needed
+        if featured_section:
+            featured_link = featured_section.find("a", class_="frontpage-link")
+            if featured_link:
+                sections["Featured"] = featured_link.text.strip()
+
         # Extract News headline
         news_section = soup.find("div", class_="col-sm-6 section-news")
         if news_section:
             first_news_link = news_section.find("a", class_="frontpage-link medium-link newstop")
-            if first_news_link and first_news_link.get("href"):
+            if first_news_link:
                 sections["News"] = first_news_link.text.strip()
 
         # Extract Sports and Opinion headlines
