@@ -4,3 +4,6 @@ For my changes, I scraped for the news, sports and opinions top headlines. This 
 
 ## Scheduling
 
+For interpreting Cron syntax, we can look at the following example. 
+
+"0 20 * * *" means that the job will run at 8pm every day, where the first 0 is minutes, second 0 is hour, and the three stars mean that it will run every day of the month, every month, and every day of the week.
